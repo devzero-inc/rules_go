@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/bazelbuild/rules_go/go/tools/bazel_testing"
+	"golang.org/x/tools/go/packages"
 )
 
 func TestMain(m *testing.M) {
@@ -86,7 +87,7 @@ const (
 )
 
 func TestStdlib(t *testing.T) {
-	resp := runForTest(t, DriverRequest{}, ".", "std")
+	resp := runForTest(t, packages.DriverRequest{}, ".", "std")
 
 	if len(resp.Packages) == 0 {
 		t.Fatal("Expected stdlib packages")
@@ -113,7 +114,7 @@ func TestStdlib(t *testing.T) {
 }
 
 func TestBaseFileLookup(t *testing.T) {
-	resp := runForTest(t, DriverRequest{}, ".", "file=hello.go")
+	resp := runForTest(t, packages.DriverRequest{}, ".", "file=hello.go")
 
 	t.Run("roots", func(t *testing.T) {
 		if len(resp.Roots) != 1 {
@@ -178,7 +179,7 @@ func TestBaseFileLookup(t *testing.T) {
 }
 
 func TestRelativeFileLookup(t *testing.T) {
-	resp := runForTest(t, DriverRequest{}, "subhello", "file=./subhello.go")
+	resp := runForTest(t, packages.DriverRequest{}, "subhello", "file=./subhello.go")
 
 	t.Run("roots", func(t *testing.T) {
 		if len(resp.Roots) != 1 {
@@ -209,7 +210,7 @@ func TestRelativeFileLookup(t *testing.T) {
 }
 
 func TestRelativePatternWildcardLookup(t *testing.T) {
-	resp := runForTest(t, DriverRequest{}, "subhello", "./...")
+	resp := runForTest(t, packages.DriverRequest{}, "subhello", "./...")
 
 	t.Run("roots", func(t *testing.T) {
 		if len(resp.Roots) != 1 {
@@ -240,7 +241,7 @@ func TestRelativePatternWildcardLookup(t *testing.T) {
 }
 
 func TestExternalTests(t *testing.T) {
-	resp := runForTest(t, DriverRequest{}, ".", "file=hello_external_test.go")
+	resp := runForTest(t, packages.DriverRequest{}, ".", "file=hello_external_test.go")
 	if len(resp.Roots) != 2 {
 		t.Errorf("Expected exactly two roots for package: %+v", resp.Roots)
 	}
@@ -278,11 +279,11 @@ func TestOverlay(t *testing.T) {
 	subhelloPath := path.Join(wd, "subhello/subhello.go")
 
 	expectedImportsPerFile := map[string][]string{
-		helloPath:    []string{"fmt"},
-		subhelloPath: []string{"os", "encoding/json"},
+		helloPath:    {"fmt"},
+		subhelloPath: {"os", "encoding/json"},
 	}
 
-	overlayDriverRequest := DriverRequest{
+	overlayDriverRequest := packages.DriverRequest{
 		Overlay: map[string][]byte{
 			helloPath: []byte(`
 				package hello
@@ -324,7 +325,7 @@ func TestOverlay(t *testing.T) {
 	expectSetEquality(t, expectedImportsPerFile[subhelloPath], subhelloPkgImportPaths, "subhello imports")
 }
 
-func runForTest(t *testing.T, driverRequest DriverRequest, relativeWorkingDir string, args ...string) driverResponse {
+func runForTest(t *testing.T, driverRequest packages.DriverRequest, relativeWorkingDir string, args ...string) driverResponse {
 	t.Helper()
 
 	// Remove most environment variables, other than those on an allowlist.

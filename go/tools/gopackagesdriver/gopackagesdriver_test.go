@@ -100,13 +100,7 @@ func TestStdlib(t *testing.T) {
 				continue
 			}
 
-			var hasCompiledFiles bool
-			for _, x := range pkg.CompiledGoFiles {
-				hasCompiledFiles = true
-				break
-			}
-
-			if !hasCompiledFiles {
+			if len(pkg.CompiledGoFiles) == 0 {
 				t.Errorf("%q stdlib package should have compiled files", pkg.Name)
 			}
 		}

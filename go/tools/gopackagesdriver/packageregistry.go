@@ -60,12 +60,8 @@ func (pr *PackageRegistry) Add(pkgs ...*FlatPackage) *PackageRegistry {
 
 		pr.packagesByID[pkg.ID] = pkg
 
-		// TODO(ellie): wtf why does this fix things
 		if flatPkg.IsStdlib() {
 			pkg.CompiledGoFiles = pkg.GoFiles
-		}
-
-		if flatPkg.IsStdlib() {
 			pr.stdlib[pkg.PkgPath] = pkg
 		}
 	}

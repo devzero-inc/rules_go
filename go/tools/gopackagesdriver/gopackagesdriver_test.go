@@ -87,6 +87,32 @@ const (
 	bzlmodOsPkgID = "@@io_bazel_rules_go//stdlib:os"
 )
 
+func TestStdlib(t *testing.T) {
+		resp := runForTest(t, packages.DriverRequest{}, ".", "std")
+
+		if len(resp.Packages) == 0 {
+			t.Fatal("Expected stdlib packages")
+		}
+
+		for _, pkg := range resp.Packages {
+			// net, plugin and user stdlib packages seem to have compiled files only for Linux.
+			if pkg.Name != "cgo" {
+				continue
+			}
+
+			var hasCompiledFiles bool
+			for _, x := range pkg.CompiledGoFiles {
+				hasCompiledFiles = true
+				break
+			}
+
+			if !hasCompiledFiles {
+				t.Errorf("%q stdlib package should have compiled files", pkg.Name)
+			}
+		}
+	}
+
+
 func TestBaseFileLookup(t *testing.T) {
 	resp := runForTest(t, packages.DriverRequest{}, ".", "file=hello.go")
 

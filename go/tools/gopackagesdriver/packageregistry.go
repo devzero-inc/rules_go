@@ -16,7 +16,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
@@ -58,12 +57,11 @@ func (pr *PackageRegistry) Add(pkgs ...*FlatPackage) *PackageRegistry {
 			Imports:         imports,
 		}
 
-		pr.packagesByID[pkg.ID] = pkg
-
-		// TODO(ellie): wtf why does this fix things
-		if flatPkg.IsStdlib() {
+		if len(pkg.CompiledGoFiles) <= 0 {
 			pkg.CompiledGoFiles = pkg.GoFiles
 		}
+
+		pr.packagesByID[pkg.ID] = pkg
 
 		if flatPkg.IsStdlib() {
 			pr.stdlib[pkg.PkgPath] = pkg
@@ -110,19 +108,11 @@ func (pr *PackageRegistry) walk(acc map[string]*packages.Package, root string) {
 	pkg := pr.packagesByID[root]
 
 	if pkg == nil {
-		fmt.Fprintf(os.Stderr, "Error: package ID not found %v\n", root)
 		return
 	}
 
 	acc[pkg.ID] = pkg
-	for imp, pkgI := range pkg.Imports {
-		if pkgI == nil {
-			fmt.Fprintf(os.Stderr, "Error: import %s for package %v not resolved\n", imp, root)
-			if _, ok := pr.stdlib[imp]; ok {
-				fmt.Fprintf(os.Stderr, "import was stdlib\n")
-			}
-			continue
-		}
+	for _, pkgI := range pkg.Imports {
 		if _, ok := acc[pkgI.ID]; !ok {
 			pr.walk(acc, pkgI.ID)
 		}

@@ -507,7 +507,7 @@ _go_test_kwargs = {
     in `//foo/bar` is named `bar_test`, and uses internal and external
     sources.
     """,
-    "exec_compatible_with" = HOST_CONSTRAINTS,
+    "exec_compatible_with": HOST_CONSTRAINTS,
 }
 
 go_test = rule(**_go_test_kwargs)

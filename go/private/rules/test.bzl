@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@local_config_platform//:constraints.bzl", "HOST_CONSTRAINTS")
 load(
     "@bazel_skylib//lib:structs.bzl",
     "structs",
@@ -506,6 +507,7 @@ _go_test_kwargs = {
     in `//foo/bar` is named `bar_test`, and uses internal and external
     sources.
     """,
+    "exec_compatible_with" = HOST_CONSTRAINTS,
 }
 
 go_test = rule(**_go_test_kwargs)
